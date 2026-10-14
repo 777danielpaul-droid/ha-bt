@@ -1,0 +1,18 @@
+# Build artifacts
+bin/
+obj/
+.vs/
+
+# Runtime data and logs
+/data/
+/logs/
+*.lock
+*.tmp
+
+# IDE/user files
+*.user
+*.suo
+
+# OS metadata
+.DS_Store
+Thumbs.db

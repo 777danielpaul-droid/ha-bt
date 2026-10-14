@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Budget Tracker</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E💸%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="shell">
+    <header class="top">
+      <div class="brand">
+        <span class="logo">€</span>
+        <div>
+          <h1>Budget Tracker</h1>
+          <p id="today"></p>
+        </div>
+      </div>
+      <span class="pill" id="conn">verbunden mit C#-Backend</span>
+    </header>
+
+    <div id="alert" class="alert" hidden></div>
+
+    <!-- Erststart: Budget festlegen -->
+    <main id="setup" hidden>
+      <section class="card setup-card">
+        <h2>Willkommen!</h2>
+        <p class="muted">Lege dein Startbudget fest. Nur Ausgaben verringern es, Einnahmen bleiben davon getrennt.</p>
+        <form id="setupForm" class="row">
+          <div class="field grow">
+            <label for="setupAmount">Startbudget (€)</label>
+            <input id="setupAmount" inputmode="decimal" placeholder="1000" autocomplete="off" required>
+          </div>
+          <button class="btn primary" type="submit">Budget speichern</button>
+        </form>
+      </section>
+    </main>
+
+    <main id="app" class="grid" hidden>
+      <!-- Budget -->
+      <section class="card hero">
+        <div class="card-head">
+          <h2>Verbleibendes Budget</h2>
+          <span class="chip" id="budgetChip"></span>
+        </div>
+        <div class="big" id="remaining">–</div>
+        <div class="bar" id="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+          <div class="fill" id="fill"></div>
+          <div class="mark" id="mark" title="Warnschwelle"></div>
+        </div>
+        <div class="facts">
+          <div><span>Budget + Aufladungen</span><b id="fTotal">–</b></div>
+          <div><span>Einnahmen</span><b id="fIncome">–</b></div>
+          <div><span>Ausgegeben</span><b id="fSpent">–</b></div>
+          <div><span>Übrig</span><b id="fPercent">–</b></div>
+        </div>
+      </section>
+
+      <!-- Neue Buchung -->
+      <section class="card">
+        <div class="card-head"><h2>Neue Buchung</h2></div>
+        <form id="txForm" class="stack">
+          <div class="seg" role="radiogroup" aria-label="Typ">
+            <input type="radio" name="type" id="tExpense" value="Expense" checked>
+            <label for="tExpense">Ausgabe</label>
+            <input type="radio" name="type" id="tIncome" value="Income">
+            <label for="tIncome">Einnahme</label>
+          </div>
+          <div class="field">
+            <label for="desc">Beschreibung</label>
+            <input id="desc" maxlength="500" placeholder="z. B. Lebensmittel" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="amount">Betrag (€)</label>
+            <input id="amount" inputmode="decimal" placeholder="0,00" autocomplete="off" required>
+          </div>
+          <button class="btn primary" type="submit" id="txBtn">Buchung hinzufügen</button>
+        </form>
+      </section>
+
+      <!-- Kennzahlen -->
+      <section class="card stat">
+        <span class="stat-label">Einnahmen gesamt (inkl. Budget)</span>
+        <b class="stat-value pos" id="sIncome">–</b>
+      </section>
+      <section class="card stat">
+        <span class="stat-label">Ausgaben gesamt</span>
+        <b class="stat-value neg" id="sExpense">–</b>
+      </section>
+      <section class="card stat">
+        <span class="stat-label">Kontostand = Restbudget</span>
+        <b class="stat-value" id="sBalance">–</b>
+      </section>
+
+      <!-- Transaktionen -->
+      <section class="card list-card">
+        <div class="card-head">
+          <h2>Buchungen</h2>
+          <span class="muted small" id="listSummary"></span>
+        </div>
+        <form id="filterForm" class="filters">
+          <div class="field"><label for="from">Von</label><input type="date" id="from"></div>
+          <div class="field"><label for="to">Bis</label><input type="date" id="to"></div>
+          <div class="field">
+            <label for="ftype">Typ</label>
+            <select id="ftype">
+              <option value="">Alle</option>
+              <option value="Income">Einnahmen</option>
+              <option value="Expense">Ausgaben</option>
+            </select>
+          </div>
+          <button class="btn ghost" type="button" id="resetFilter">Zurücksetzen</button>
+        </form>
+        <ul id="txList" class="tx-list"></ul>
+        <p id="empty" class="empty" hidden>Keine Buchungen im gewählten Zeitraum.</p>
+      </section>
+
+      <!-- Budget aufladen -->
+      <section class="card">
+        <div class="card-head"><h2>Budget aufladen</h2></div>
+        <form id="topupForm" class="stack">
+          <div class="field">
+            <label for="topup">Betrag (€)</label>
+            <input id="topup" inputmode="decimal" placeholder="100" autocomplete="off" required>
+          </div>
+          <button class="btn primary" type="submit">Aufladen</button>
+        </form>
+        <button class="btn bonus" id="bonusBtn" type="button">
+          <span>🎁 Bonus-Aufladung</span><b id="bonusAmount">+7.777.777 €</b>
+        </button>
+
+        <hr>
+        <form id="thrForm" class="stack">
+          <div class="field">
+            <label for="thr">Warnschwelle (% verbleibend)</label>
+            <div class="row">
+              <input id="thr" inputmode="decimal" placeholder="20" autocomplete="off" required>
+              <button class="btn ghost" type="submit">Speichern</button>
+            </div>
+          </div>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+  <div id="fx" class="fx" aria-hidden="true"></div>
+  <script src="app.js"></script>
+</body>
+</html>
